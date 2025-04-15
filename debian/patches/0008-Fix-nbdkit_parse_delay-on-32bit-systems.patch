@@ -1,0 +1,21 @@
+From: Hilko Bengen <bengen@debian.org>
+Date: Sun, 25 Aug 2024 17:58:22 +0200
+Subject: Fix nbdkit_parse_delay on 32bit systems
+
+---
+ server/public.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/server/public.c b/server/public.c
+index c183aef..912504a 100644
+--- a/server/public.c
++++ b/server/public.c
+@@ -465,7 +465,7 @@ nbdkit_parse_delay (const char *what, const char *str,
+   if (rsec)
+     *rsec = d;
+   if (rnsec)
+-    *rnsec = (d - *rsec) * 1000000000.;
++    *rnsec = round((d - *rsec) * 1000000000.);
+ 
+   return 0;
+ }
