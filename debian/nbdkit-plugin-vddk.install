@@ -1,0 +1,2 @@
+/usr/lib/*-*/nbdkit/plugins/nbdkit-vddk-plugin.so
+/usr/share/man/man1/nbdkit-vddk-plugin.1

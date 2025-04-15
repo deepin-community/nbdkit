@@ -1,0 +1,34 @@
+Aurelien Jarno <aurel32@debian.org> writes:
+
+I have tracked down the issue to two parts:
+
+* nbdkit uses a version script with -rdynamic, which causes the
+  _IO_stdin_used symbol from crt1.o to not be included in nbdkit binary.
+  This is used by the GNU libc determine which version of the I/O
+  functions should be used. Not exporting it means that the "old"
+  version is used, leading to possible crashes or other issues on
+  architectures that were supported by glibc 2.0. That is for debian:
+  i386 and mips64el for official architectures and alpha, hppa, m68k,
+  powerpc, sh4 and sparc64 for ports architecture.
+
+* glibc 2.40 changed the format of the libio structures even more [1],
+  increasing the incompatibilities.
+
+Therefore I believe the problem has to be fixed on the nbdkit side, with
+the following patch:
+
+--- nbdkit-1.40.4.orig/server/nbdkit.syms
++++ nbdkit-1.40.4/server/nbdkit.syms
+@@ -100,6 +100,12 @@
+     # For AFL++ to work:
+     __afl_*;
+ 
++    # The _IO_stdin_used symbol is used by the GNU libc determine which
++    # version of the I/O functions should be used. Not exporting it
++    # means that the "old" version is used, leading to crashes or other
++    # issues on architectures that were supported by glibc 2.0.
++    _IO_stdin_used;
++
+   # Everything else is hidden.
+   local: *;
+ };
